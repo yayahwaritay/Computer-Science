@@ -1,0 +1,29 @@
+## .NET
+bin/
+obj/
+/packages/
+/_ReSharper.Caches/
+
+## IDE
+riderModule.iml
+.idea/
+.vs/
+.vscode/
+*.user
+*.suo
+
+## Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+
+## Uploads (don't track uploaded files)
+wwwroot/uploads/pastquestions/*
+wwwroot/uploads/notes/*
+!wwwroot/uploads/pastquestions/.gitkeep
+!wwwroot/uploads/notes/.gitkeep
+
+## OS
+.DS_Store
+Thumbs.db

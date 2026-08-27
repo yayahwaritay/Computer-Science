@@ -8,5 +8,7 @@ public interface IUnitOfWork : IDisposable
     IPastQuestionRepository PastQuestions { get; }
     INoteRepository Notes { get; }
     IStudentRepository Students { get; }
+    IDissertationRepository Dissertations { get; }
+    IActivityLogRepository ActivityLogs { get; }
     Task<int> SaveChangesAsync();
 }

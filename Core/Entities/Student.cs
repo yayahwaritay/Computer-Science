@@ -3,6 +3,8 @@ namespace CompSci.Core.Entities;
 public class Student
 {
     public Guid Id { get; set; }
+    public Guid UserId { get; set; }
+    public User? User { get; set; }
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;
     public string StudentId { get; set; } = string.Empty;

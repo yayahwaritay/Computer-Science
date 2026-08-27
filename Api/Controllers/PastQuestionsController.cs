@@ -1,3 +1,4 @@
+using CompSci.Api.Filters;
 using CompSci.Core.DTOs;
 using CompSci.Core.Interfaces;
 using CompSci.Core.Validators;
@@ -24,6 +25,7 @@ public class PastQuestionsController : ControllerBase
     [HttpPost]
     [Authorize(Roles = "Admin,Lecturer")]
     [Consumes("multipart/form-data")]
+    [LogActivity("PastQuestion", "Create")]
     public async Task<IActionResult> Create([FromForm] string courseName, [FromForm] string courseCode, IFormFile file)
     {
         var request = new PastQuestionRequest { CourseName = courseName, CourseCode = courseCode };
@@ -88,6 +90,7 @@ public class PastQuestionsController : ControllerBase
     [HttpPut("{id}")]
     [Authorize(Roles = "Admin,Lecturer")]
     [Consumes("multipart/form-data")]
+    [LogActivity("PastQuestion", "Update")]
     public async Task<IActionResult> Update(Guid id, [FromForm] string courseName, [FromForm] string courseCode, IFormFile? file)
     {
         var request = new PastQuestionRequest { CourseName = courseName, CourseCode = courseCode };
@@ -105,6 +108,7 @@ public class PastQuestionsController : ControllerBase
     /// </summary>
     [HttpDelete("{id}")]
     [Authorize(Roles = "Admin,Lecturer")]
+    [LogActivity("PastQuestion", "Delete")]
     public async Task<IActionResult> Delete(Guid id)
     {
         await _pastQuestionService.DeleteAsync(id);

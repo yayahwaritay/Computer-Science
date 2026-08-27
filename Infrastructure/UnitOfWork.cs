@@ -14,6 +14,8 @@ public class UnitOfWork : IUnitOfWork
     public IPastQuestionRepository PastQuestions { get; }
     public INoteRepository Notes { get; }
     public IStudentRepository Students { get; }
+    public IDissertationRepository Dissertations { get; }
+    public IActivityLogRepository ActivityLogs { get; }
 
     public UnitOfWork(AppDbContext context)
     {
@@ -24,6 +26,8 @@ public class UnitOfWork : IUnitOfWork
         PastQuestions = new PastQuestionRepository(_context);
         Notes = new NoteRepository(_context);
         Students = new StudentRepository(_context);
+        Dissertations = new DissertationRepository(_context);
+        ActivityLogs = new ActivityLogRepository(_context);
     }
 
     public async Task<int> SaveChangesAsync()

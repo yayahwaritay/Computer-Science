@@ -14,6 +14,11 @@ public class StudentRepository : GenericRepository<Student>, IStudentRepository
         return await _dbSet.FirstOrDefaultAsync(s => s.StudentId == studentId);
     }
 
+    public async Task<Student?> GetByUserIdAsync(Guid userId)
+    {
+        return await _dbSet.FirstOrDefaultAsync(s => s.UserId == userId);
+    }
+
     public async Task<bool> StudentIdExistsAsync(string studentId)
     {
         return await _dbSet.AnyAsync(s => s.StudentId == studentId);

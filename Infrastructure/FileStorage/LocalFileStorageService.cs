@@ -6,12 +6,14 @@ namespace CompSci.Infrastructure.FileStorage;
 
 public class LocalFileStorageService : IFileStorageService
 {
+    private readonly string _webRootPath;
     private readonly string _basePath;
     private readonly FileExtensionContentTypeProvider _contentTypeProvider;
 
     public LocalFileStorageService(IWebHostEnvironment env)
     {
-        _basePath = Path.Combine(env.ContentRootPath, "wwwroot", "uploads");
+        _webRootPath = Path.Combine(env.ContentRootPath, "wwwroot");
+        _basePath = Path.Combine(_webRootPath, "uploads");
         _contentTypeProvider = new FileExtensionContentTypeProvider();
 
         if (!Directory.Exists(_basePath))
@@ -34,18 +36,7 @@ public class LocalFileStorageService : IFileStorageService
 
     public Task<bool> DeleteFileAsync(string filePath)
     {
-        var fullPath = Path.Combine(_basePath, Path.GetFileName(filePath));
-
-        if (filePath.Contains("pastquestions"))
-            fullPath = Path.Combine(_basePath, "pastquestions", Path.GetFileName(filePath));
-        else if (filePath.Contains("notes"))
-            fullPath = Path.Combine(_basePath, "notes", Path.GetFileName(filePath));
-
-        var combinedPath = Path.Combine(
-            Path.GetDirectoryName(_basePath) ?? "",
-            "wwwroot",
-            filePath.Replace("\\", "/")
-        );
+        var combinedPath = ResolvePath(filePath);
 
         if (File.Exists(combinedPath))
         {
@@ -58,11 +49,7 @@ public class LocalFileStorageService : IFileStorageService
 
     public Task<(Stream FileStream, string ContentType)> GetFileAsync(string filePath)
     {
-        var combinedPath = Path.Combine(
-            Path.GetDirectoryName(_basePath) ?? "",
-            "wwwroot",
-            filePath.Replace("\\", "/")
-        );
+        var combinedPath = ResolvePath(filePath);
 
         if (!File.Exists(combinedPath))
             throw new FileNotFoundException($"File not found: {filePath}");
@@ -76,12 +63,11 @@ public class LocalFileStorageService : IFileStorageService
 
     public bool FileExists(string filePath)
     {
-        var combinedPath = Path.Combine(
-            Path.GetDirectoryName(_basePath) ?? "",
-            "wwwroot",
-            filePath.Replace("\\", "/")
-        );
+        return File.Exists(ResolvePath(filePath));
+    }
 
-        return File.Exists(combinedPath);
+    private string ResolvePath(string filePath)
+    {
+        return Path.Combine(_webRootPath, filePath.Replace("\\", "/"));
     }
 }

@@ -1,4 +1,5 @@
 using CompSci.Core.Entities;
+using CompSci.Core.Enums;
 using CompSci.Core.Interfaces;
 using CompSci.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -27,5 +28,18 @@ public class UserRepository : GenericRepository<User>, IUserRepository
     public async Task<bool> UsernameExistsAsync(string username)
     {
         return await _dbSet.AnyAsync(u => u.Username == username);
+    }
+
+    public async Task<IEnumerable<User>> GetPendingStudentApprovalsAsync()
+    {
+        return await _dbSet
+            .AsNoTracking()
+            .Where(u => u.Role == UserRole.Student && !u.IsApproved)
+            .ToListAsync();
+    }
+
+    public async Task<int> CountByRoleAsync(UserRole role)
+    {
+        return await _dbSet.CountAsync(u => u.Role == role);
     }
 }

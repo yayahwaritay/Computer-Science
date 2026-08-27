@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using CompSci.Core.DTOs;
 using CompSci.Core.Interfaces;
 using CompSci.Core.Validators;
@@ -67,5 +68,70 @@ public class AuthController : ControllerBase
     {
         var result = await _authService.GetAllUsersAsync();
         return Ok(ApiResponse<IEnumerable<UserResponse>>.SuccessResponse(result));
+    }
+
+    /// <summary>
+    /// Self-register as a student. The account is created in a pending state and must be
+    /// approved by an Admin or Lecturer before it can be used to log in.
+    /// </summary>
+    [HttpPost("register-student")]
+    [AllowAnonymous]
+    public async Task<IActionResult> RegisterStudent([FromBody] StudentSelfRegisterRequest request)
+    {
+        var errors = AuthValidator.ValidateStudentSelfRegister(request);
+        if (errors.Any())
+            return BadRequest(ApiResponse<StudentRegistrationResponse>.FailResponse("Validation failed.", errors));
+
+        var result = await _authService.RegisterStudentAsync(request);
+        return CreatedAtAction(nameof(RegisterStudent), ApiResponse<StudentRegistrationResponse>.SuccessResponse(result, "Registration received and pending approval."));
+    }
+
+    /// <summary>
+    /// List student registrations awaiting approval (Admin/Lecturer only)
+    /// </summary>
+    [HttpGet("pending-registrations")]
+    [Authorize(Roles = "Admin,Lecturer")]
+    public async Task<IActionResult> GetPendingRegistrations()
+    {
+        var result = await _authService.GetPendingRegistrationsAsync();
+        return Ok(ApiResponse<IEnumerable<PendingRegistrationResponse>>.SuccessResponse(result));
+    }
+
+    /// <summary>
+    /// Approve a pending student registration (Admin/Lecturer only)
+    /// </summary>
+    [HttpPost("{userId}/approve")]
+    [Authorize(Roles = "Admin,Lecturer")]
+    public async Task<IActionResult> ApproveRegistration(Guid userId)
+    {
+        var result = await _authService.ApproveRegistrationAsync(userId);
+        return Ok(ApiResponse<UserResponse>.SuccessResponse(result, "Registration approved."));
+    }
+
+    /// <summary>
+    /// Reject a pending student registration (Admin/Lecturer only)
+    /// </summary>
+    [HttpPost("{userId}/reject")]
+    [Authorize(Roles = "Admin,Lecturer")]
+    public async Task<IActionResult> RejectRegistration(Guid userId)
+    {
+        await _authService.RejectRegistrationAsync(userId);
+        return Ok(ApiResponse<bool>.SuccessResponse(true, "Registration rejected."));
+    }
+
+    /// <summary>
+    /// Change the current user's password
+    /// </summary>
+    [HttpPost("change-password")]
+    [Authorize]
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
+    {
+        var errors = AuthValidator.ValidateChangePassword(request);
+        if (errors.Any())
+            return BadRequest(ApiResponse<bool>.FailResponse("Validation failed.", errors));
+
+        var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+        await _authService.ChangePasswordAsync(userId, request);
+        return Ok(ApiResponse<bool>.SuccessResponse(true, "Password changed successfully."));
     }
 }

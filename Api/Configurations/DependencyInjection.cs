@@ -1,9 +1,12 @@
+using CompSci.Core.Configuration;
 using CompSci.Core.Interfaces;
 using CompSci.Core.Services;
 using CompSci.Infrastructure;
 using CompSci.Infrastructure.Data;
+using CompSci.Infrastructure.Email;
 using CompSci.Infrastructure.FileStorage;
 using CompSci.Infrastructure.Repositories;
+using CompSci.Infrastructure.Reports;
 using Microsoft.EntityFrameworkCore;
 
 namespace CompSci.Api.Configurations;
@@ -23,8 +26,14 @@ public static class DependencyInjection
         services.AddScoped<IPastQuestionService, PastQuestionService>();
         services.AddScoped<INoteService, NoteService>();
         services.AddScoped<IStudentService, StudentService>();
+        services.AddScoped<IDissertationService, DissertationService>();
+        services.AddScoped<IActivityLogService, ActivityLogService>();
+        services.AddScoped<IDissertationPdfBuilder, DissertationPdfBuilder>();
 
         services.AddScoped<IFileStorageService, LocalFileStorageService>();
+
+        services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
+        services.AddHttpClient<IEmailSender, BrevoEmailSender>();
 
         return services;
     }

@@ -5,5 +5,6 @@ namespace CompSci.Core.Interfaces;
 public interface IStudentRepository : IGenericRepository<Student>
 {
     Task<Student?> GetByStudentIdAsync(string studentId);
+    Task<Student?> GetByUserIdAsync(Guid userId);
     Task<bool> StudentIdExistsAsync(string studentId);
 }

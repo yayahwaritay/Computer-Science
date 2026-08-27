@@ -1,3 +1,4 @@
+using CompSci.Api.Filters;
 using CompSci.Core.DTOs;
 using CompSci.Core.Interfaces;
 using CompSci.Core.Validators;
@@ -23,6 +24,7 @@ public class CoursesController : ControllerBase
     /// </summary>
     [HttpPost]
     [Authorize(Roles = "Admin,Lecturer")]
+    [LogActivity("Course", "Create")]
     public async Task<IActionResult> Create([FromBody] CourseRequest request)
     {
         var errors = CourseValidator.Validate(request);
@@ -71,6 +73,7 @@ public class CoursesController : ControllerBase
     /// </summary>
     [HttpPut("{id}")]
     [Authorize(Roles = "Admin,Lecturer")]
+    [LogActivity("Course", "Update")]
     public async Task<IActionResult> Update(Guid id, [FromBody] CourseRequest request)
     {
         var errors = CourseValidator.Validate(request);
@@ -86,6 +89,7 @@ public class CoursesController : ControllerBase
     /// </summary>
     [HttpDelete("{id}")]
     [Authorize(Roles = "Admin")]
+    [LogActivity("Course", "Delete")]
     public async Task<IActionResult> Delete(Guid id)
     {
         await _courseService.DeleteAsync(id);

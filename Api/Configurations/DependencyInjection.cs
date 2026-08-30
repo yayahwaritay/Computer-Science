@@ -29,6 +29,8 @@ public static class DependencyInjection
         services.AddScoped<IDissertationService, DissertationService>();
         services.AddScoped<IActivityLogService, ActivityLogService>();
         services.AddScoped<IDissertationPdfBuilder, DissertationPdfBuilder>();
+        services.AddScoped<ICourseAllocationService, CourseAllocationService>();
+        services.AddScoped<ICourseAllocationPdfBuilder, CourseAllocationPdfBuilder>();
 
         services.AddScoped<IFileStorageService, LocalFileStorageService>();
 

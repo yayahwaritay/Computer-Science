@@ -42,6 +42,7 @@ Migrations/      EF Core migrations
 - **Course**, **Assignment**, **Note**, **PastQuestion** — course-management content, generally readable by any authenticated user and writable by `Admin`/`Lecturer`.
 - **Dissertation** — final year project/dissertation record, managed exclusively by `Admin`/`Lecturer`. Every record tracks `CreatedByUserId` — see [Dissertation ownership scoping](#recent-changes-dissertation-ownership-scoping-lecturer-vs-admin-visibility) below.
 - **ActivityLog** — site-wide audit trail of who did what — see [Lecturer ID + activity log](#recent-changes-lecturer-id--site-wide-activity-log) below.
+- **CourseAllocation** — which staff member teaches which course, per program/year of study/academic year/semester, managed exclusively by `Admin` — see [Course allocation](#recent-changes-course-allocation--pdf-export) below.
 
 ## API summary
 
@@ -58,6 +59,7 @@ All responses are wrapped in `ApiResponse<T>` (`success`, `message`, `data`, `er
 | Past questions | `POST/GET/PUT/DELETE /api/pastquestions`, `GET /api/pastquestions/paged`, `GET /api/pastquestions/{id}`, `GET /api/pastquestions/{id}/download` |
 | Dissertations | `POST/GET/PUT/DELETE /api/dissertations`, `GET /api/dissertations/paged`, `GET /api/dissertations/{id}`, `GET /api/dissertations/by-student?studentId=...`, `GET /api/dissertations/{id}/download`, `GET /api/dissertations/search`, `GET /api/dissertations/export/csv`, `GET /api/dissertations/export/pdf` |
 | Activity log | `GET /api/activitylogs` (Admin only, all users), `GET /api/activitylogs/mine` (Admin or Lecturer, own activity only) |
+| Course allocations | `POST /api/courseallocations`, `POST /api/courseallocations/bulk` (Admin only), `GET/PUT/DELETE /api/courseallocations`, `GET /api/courseallocations/paged`, `GET /api/courseallocations/{id}`, `GET /api/courseallocations/mine` (Lecturer only), `GET /api/courseallocations/export/pdf`, `GET /api/courseallocations/mine/export/pdf` (Lecturer only) |
 
 Most write operations require `Admin` or `Lecturer`; read operations require any authenticated user unless marked `AllowAnonymous`. The **Dissertations** area is the one exception — every endpoint, including reads, requires `Admin` or `Lecturer`, and within it a Lecturer only ever sees/manages the records they personally created; only Admin sees everything (including the `search`/`export` endpoints, which are Admin-only outright).
 
@@ -280,3 +282,52 @@ Frontend integration note: since these are file downloads, trigger them with a p
 - PDF built by `Infrastructure/Reports/DissertationPdfBuilder.cs` using the new **PdfSharpCore** NuGet package (MIT-licensed, no revenue-based restrictions — chosen deliberately over alternatives like QuestPDF that have revenue-conditional licensing terms).
 
 Verified live: created three dissertation records spanning 2023–2026 across two programs, confirmed `fromYear`/`toYear`/`program`/`school` filters (individually and combined) returned the correct subset, downloaded both CSV and PDF and confirmed the CSV contained exactly the 5 specified columns and the PDF was a valid file, and confirmed a Lecturer gets `403` on all three endpoints.
+
+---
+
+## Recent changes: Course allocation + PDF export
+
+Added a course allocation feature so Admin can assign courses to lecturers (and, by extension, to the students in that program/year), and download the result as a PDF in the university's standard historical layout — e.g. `2021_2022 Second Semester Allocation.pdf`.
+
+### Domain
+
+- **New `CourseAllocation` entity** — one row of an allocation table: `AcademicYear` (e.g. `"2021/2022"`), `Semester` (`First`/`Second`), `ProgramName` (e.g. `"B.Sc. (Hons) Computer Science"`), `YearOfStudy` (1–6), `CourseCode`, `CourseDescription`, `CreditHours` (kept as text, e.g. `"3"` or `"3(P)"`, to preserve the "(P)" = practical marker used in the historical documents), `StaffName` (display text — a lecturer's name, or a department like `"Engl. Dept"` for staff without a login account).
+- **`LecturerUserId`** (optional) links a row to an actual `User` (`Role: Lecturer`) account, so that lecturer can pull up their own allocation. Left `null` for rows staffed by something other than a lecturer account (e.g. `"Engl. Dept"`, `"Instructor"`).
+- A "document" is simply every row sharing one `AcademicYear` + `Semester` — there's no separate document/header entity; the PDF export groups matching rows by `ProgramName` then `YearOfStudy` at render time, exactly like the historical spreadsheets (one table per program, split into FIRST/SECOND/THIRD YEAR sections, each ending in a SUB-TOTAL credit-hour row).
+
+### Endpoints (`/api/courseallocations`)
+
+All require authentication; **writes are Admin-only** (this is intentionally simpler than Dissertations/Courses, which also allow Lecturer writes — allocation is an Admin-only responsibility here):
+
+| Endpoint | Access | Notes |
+|---|---|---|
+| `POST /api/courseallocations` | Admin | Create one row |
+| `POST /api/courseallocations/bulk` | Admin | Create many rows in one call — body is `{ "allocations": [ {...}, {...} ] }`. This is the "simple for Admin" path: build one program's whole year-by-year table (or a whole semester across every program) and submit it in a single request instead of one call per course row. All rows are validated up front; if any row fails, nothing is saved and every row's errors are returned, prefixed `Row N: ...`. |
+| `GET /api/courseallocations`, `/paged` | Any authenticated | Optional `?academicYear=&semester=&programName=` filters (all optional, combine with AND; `programName` is a case-insensitive contains match) |
+| `GET /api/courseallocations/{id}` | Any authenticated | |
+| `GET /api/courseallocations/mine` | Lecturer | Only the caller's own allocated courses, optional `?academicYear=&semester=` |
+| `PUT /api/courseallocations/{id}`, `DELETE /api/courseallocations/{id}` | Admin | |
+| `GET /api/courseallocations/export/pdf?academicYear=&semester=&programName=` | Any authenticated | Compiled PDF, standard layout. `academicYear` and `semester` are **required** — they drive both the title and the filename. `programName` optionally narrows to one program's table. |
+| `GET /api/courseallocations/mine/export/pdf?academicYear=&semester=` | Lecturer | Same layout/filename as above, pre-filtered to the caller's own rows — this is what a Lecturer's "download my allocation" button should call. |
+
+### PDF format
+
+`GET /api/courseallocations/export/pdf?academicYear=2021/2022&semester=Second` downloads as **`2021_2022 Second Semester Allocation.pdf`** (`academicYear` with `/` → `_`, followed by ` <Semester> Semester Allocation.pdf`), containing:
+
+- Title: `SECOND SEMESTER COURSE ALLOCATION -2021/22` (the year is shortened the same way the historical documents do it).
+- One bordered table per matching program, headed by the program name, columns `Course Code | Course Description | Credit Hrs | Staff`.
+- Each table is split into year-of-study sections (`FIRST YEAR`, `SECOND YEAR`, ...), each ending in a `SUB-TOTAL` row summing that section's credit hours (parsed from the leading digits of `CreditHours`, so `"3(P)"` contributes `3`).
+
+Frontend integration note: like the Dissertation exports, this is a raw file stream, not `ApiResponse<T>` — trigger it with a `fetch()` + `Authorization` header + blob download, or a signed-link pattern, not a plain `<a href>`.
+
+### What changed under the hood
+
+- `Core/Entities/CourseAllocation.cs`, `Core/Enums/Semester.cs`, `Core/DTOs/CourseAllocationDtos.cs`.
+- `CourseAllocationValidator` (`Core/Validators/Validators.cs`) — validates the `"YYYY/YYYY"` academic year shape among other fields.
+- `ICourseAllocationRepository`/`CourseAllocationRepository`, wired into `IUnitOfWork`/`UnitOfWork`.
+- `CourseAllocationService` — filtering is in-memory over `GetAllAsync()` (fine at this data volume, same tradeoff already made for Dissertation search — would need a DB-level query if the table grows very large); validates `LecturerUserId` references an existing `Role: Lecturer` account when supplied.
+- PDF rendered by `Infrastructure/Reports/CourseAllocationPdfBuilder.cs` using the existing **PdfSharpCore** dependency (same one used for Dissertation PDF export).
+- New EF Core migration `AddCourseAllocations` (new, purely additive table — no existing data affected).
+- `[LogActivity("CourseAllocation", ...)]` on the single-row Create/Update/Delete endpoints, consistent with the site-wide activity log (bulk create isn't individually logged, since it doesn't map to a single entity ID).
+
+Verified: project builds clean (`dotnet build`) and the migration was generated and reviewed (`dotnet ef migrations add AddCourseAllocations`) — purely additive `CourseAllocations` table, no changes to existing tables.

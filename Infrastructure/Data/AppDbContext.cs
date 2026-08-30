@@ -15,6 +15,7 @@ public class AppDbContext : DbContext
     public DbSet<Student> Students => Set<Student>();
     public DbSet<Dissertation> Dissertations => Set<Dissertation>();
     public DbSet<ActivityLog> ActivityLogs => Set<ActivityLog>();
+    public DbSet<CourseAllocation> CourseAllocations => Set<CourseAllocation>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -113,6 +114,19 @@ public class AppDbContext : DbContext
             entity.Property(e => e.LecturerId).HasMaxLength(20);
             entity.Property(e => e.EntityType).HasMaxLength(50).IsRequired();
             entity.Property(e => e.Action).HasMaxLength(20).IsRequired();
+        });
+
+        modelBuilder.Entity<CourseAllocation>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => new { e.AcademicYear, e.Semester });
+            entity.HasIndex(e => e.LecturerUserId);
+            entity.Property(e => e.AcademicYear).HasMaxLength(20).IsRequired();
+            entity.Property(e => e.ProgramName).HasMaxLength(200).IsRequired();
+            entity.Property(e => e.CourseCode).HasMaxLength(20).IsRequired();
+            entity.Property(e => e.CourseDescription).HasMaxLength(300).IsRequired();
+            entity.Property(e => e.CreditHours).HasMaxLength(10).IsRequired();
+            entity.Property(e => e.StaffName).HasMaxLength(200).IsRequired();
         });
     }
 }

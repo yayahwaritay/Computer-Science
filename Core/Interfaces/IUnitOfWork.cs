@@ -10,5 +10,6 @@ public interface IUnitOfWork : IDisposable
     IStudentRepository Students { get; }
     IDissertationRepository Dissertations { get; }
     IActivityLogRepository ActivityLogs { get; }
+    ICourseAllocationRepository CourseAllocations { get; }
     Task<int> SaveChangesAsync();
 }

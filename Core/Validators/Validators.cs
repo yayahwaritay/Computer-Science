@@ -1,4 +1,6 @@
+using System.Text.RegularExpressions;
 using CompSci.Core.DTOs;
+using CompSci.Core.Enums;
 
 namespace CompSci.Core.Validators;
 
@@ -136,6 +138,54 @@ public static class CourseValidator
 
         if (string.IsNullOrWhiteSpace(request.Staff))
             errors.Add("Staff name is required.");
+
+        return errors;
+    }
+}
+
+public static class CourseAllocationValidator
+{
+    private static readonly Regex AcademicYearPattern = new(@"^\d{4}/\d{4}$", RegexOptions.Compiled);
+
+    public static List<string> Validate(CourseAllocationRequest request)
+    {
+        var errors = new List<string>();
+
+        if (string.IsNullOrWhiteSpace(request.AcademicYear))
+            errors.Add("Academic year is required.");
+        else if (!AcademicYearPattern.IsMatch(request.AcademicYear))
+            errors.Add("Academic year must be in the format \"2021/2022\".");
+
+        if (!Enum.IsDefined(typeof(Semester), request.Semester))
+            errors.Add("Semester must be First or Second.");
+
+        if (string.IsNullOrWhiteSpace(request.ProgramName))
+            errors.Add("Program name is required.");
+        else if (request.ProgramName.Length > 200)
+            errors.Add("Program name must not exceed 200 characters.");
+
+        if (request.YearOfStudy <= 0 || request.YearOfStudy > 6)
+            errors.Add("Year of study must be between 1 and 6.");
+
+        if (string.IsNullOrWhiteSpace(request.CourseCode))
+            errors.Add("Course code is required.");
+        else if (request.CourseCode.Length > 20)
+            errors.Add("Course code must not exceed 20 characters.");
+
+        if (string.IsNullOrWhiteSpace(request.CourseDescription))
+            errors.Add("Course description is required.");
+        else if (request.CourseDescription.Length > 300)
+            errors.Add("Course description must not exceed 300 characters.");
+
+        if (string.IsNullOrWhiteSpace(request.CreditHours))
+            errors.Add("Credit hours is required.");
+        else if (request.CreditHours.Length > 10)
+            errors.Add("Credit hours must not exceed 10 characters.");
+
+        if (string.IsNullOrWhiteSpace(request.StaffName))
+            errors.Add("Staff name is required.");
+        else if (request.StaffName.Length > 200)
+            errors.Add("Staff name must not exceed 200 characters.");
 
         return errors;
     }

@@ -106,6 +106,7 @@ Detect this exact message (or just the 401 status right after a self-registratio
 | Area | Student can |
 |---|---|
 | Courses | View list/detail (read-only) |
+| Course allocations | View list, **download** the compiled PDF for their program |
 | Assignments | View list/detail, **download** the attached file |
 | Notes | View list/detail, **download**, and also **upload** their own note |
 | Past questions | View list/detail, **download** |
@@ -139,6 +140,19 @@ GET /api/courses/{id}                     → CourseResponse
 ```
 `staff` is the lecturer allocated to the course — it's a plain text field (not a link to a user
 account), so just display it as-is; there's no "click through to lecturer profile" today.
+
+### Course allocations — view + download the compiled PDF
+```
+GET /api/courseallocations?academicYear=&semester=&programName=       → CourseAllocationResponse[]
+GET /api/courseallocations/paged?pageNumber=&pageSize=&academicYear=&semester=&programName=
+GET /api/courseallocations/{id}                                       → CourseAllocationResponse
+GET /api/courseallocations/export/pdf?academicYear=&semester=&programName=   → raw PDF (see §5)
+```
+`academicYear` (e.g. `"2021/2022"`) and `semester` (`First`/`Second`) are required on `export/pdf`;
+pass `programName` to narrow either endpoint to just the student's own program (e.g.
+`"B.Sc. (Hons) Computer Science"`). The PDF downloads as e.g. `2021_2022 Second Semester
+Allocation.pdf` and lists, per year of study, each course's code/description/credit hours/staff —
+the same document Admin compiles for the whole department.
 
 ### Assignments — view + download
 ```

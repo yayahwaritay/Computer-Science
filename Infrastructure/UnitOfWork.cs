@@ -16,6 +16,7 @@ public class UnitOfWork : IUnitOfWork
     public IStudentRepository Students { get; }
     public IDissertationRepository Dissertations { get; }
     public IActivityLogRepository ActivityLogs { get; }
+    public ICourseAllocationRepository CourseAllocations { get; }
 
     public UnitOfWork(AppDbContext context)
     {
@@ -28,6 +29,7 @@ public class UnitOfWork : IUnitOfWork
         Students = new StudentRepository(_context);
         Dissertations = new DissertationRepository(_context);
         ActivityLogs = new ActivityLogRepository(_context);
+        CourseAllocations = new CourseAllocationRepository(_context);
     }
 
     public async Task<int> SaveChangesAsync()

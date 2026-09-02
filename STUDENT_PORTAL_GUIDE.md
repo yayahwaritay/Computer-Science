@@ -2,7 +2,8 @@
 
 This is a focused guide for building the **student-facing** frontend against the CompSci API. It
 only covers what a `Student` account can actually do: authenticate, view courses (with the staff/
-lecturer allocated to each), and view/download Notes, Assignments, and Past Question papers.
+lecturer allocated to each), view/download Notes, Assignments, and Past Question papers, and
+upload/track their own internship report and dissertation/project write-up.
 
 For the full API (Admin/Lecturer endpoints, dissertations, activity log, etc.) see the main
 [`README.md`](README.md). Everything here is a subset of that.
@@ -110,11 +111,16 @@ Detect this exact message (or just the 401 status right after a self-registratio
 | Assignments | View list/detail, **download** the attached file |
 | Notes | View list/detail, **download**, and also **upload** their own note |
 | Past questions | View list/detail, **download** |
-| Dissertations, Activity log, other Students' records, user management | ❌ No access (403) |
+| Internship report | **Upload/re-upload** their own, view its status, read comments left on it |
+| Dissertation write-up | **Upload/re-upload** their own, view its status, read comments left on it |
+| Dissertations (the official Admin/Lecturer-authored record), Activity log, other Students' records, user management | ❌ No access (403) |
 
 Students **cannot** create/edit/delete Courses, Assignments, or Past Questions, and cannot edit or
-delete Notes (including ones they uploaded themselves) — only Admin/Lecturer can. The one write
-action available to a Student is uploading a new Note.
+delete Notes (including ones they uploaded themselves) — only Admin/Lecturer can. Students also
+cannot comment on their own internship report/dissertation submission — only Admin/their assigned
+Lecturer can leave comments; the student can only read them. The write actions available to a
+Student are: uploading a new Note, and uploading/re-uploading their internship report and
+dissertation write-up.
 
 ## 4. Endpoint reference
 
@@ -212,9 +218,79 @@ GET /api/pastquestions/{id}/download            → raw file (see §5)
 `PastQuestionResponse` has the same shape as `NoteResponse` (`courseName`, `courseCode`, `filePath`,
 `originalFileName`, `uploadDate`).
 
+### Internship report & dissertation write-up — upload, status, and comments
+
+Two independent endpoint groups with the identical shape — `/api/internshipreports` for the
+internship report, `/api/dissertationsubmissions` for the dissertation/final-year-project write-up.
+Neither is related to `GET /api/dissertations` (that's a separate, staff-only official record — a
+Student gets `403` on it).
+
+```
+POST /api/internshipreports                    (multipart/form-data, field "file") → StudentSubmissionResponse
+GET  /api/internshipreports/mine                                                   → StudentSubmissionResponse | 404
+GET  /api/internshipreports/{id}/download                                          → raw file (see §5)
+GET  /api/internshipreports/{id}/comments                                          → SubmissionCommentResponse[]
+```
+Same four routes under `/api/dissertationsubmissions` for the dissertation write-up.
+
+`StudentSubmissionResponse`:
+```json
+{
+  "id": "guid",
+  "studentId": "guid",
+  "studentFullName": "Alice Test",
+  "studentIdNumber": "CS/2023/001",
+  "programName": "Computer Science",
+  "type": 0,
+  "typeText": "InternshipReport",
+  "filePath": "uploads/internship-reports/....pdf",
+  "originalFileName": "my-report.pdf",
+  "submissionCount": 2,
+  "submittedAt": "2026-08-15T10:02:00Z",
+  "updatedAt": "2026-09-02T17:10:00Z",
+  "commentCount": 1
+}
+```
+- **Uploading again overwrites the previous file** — there's no separate "update" endpoint and no
+  version history; `submissionCount` tells you how many times the student has (re-)submitted, and
+  `updatedAt` (once present) is the last re-submission time. There's no confirmation step needed
+  before re-upload replaces the old file — build any "are you sure you want to replace your
+  previous submission?" confirmation client-side if you want one.
+- **`GET .../mine` returns `404`** ("You have not submitted your ... yet.") until the student has
+  uploaded at least once — treat that as an empty/not-yet-started state on the dashboard, not an
+  error toast.
+- File constraints match Notes/Dissertations: PDF/DOC/DOCX only, 50MB max.
+- **Visibility of the file/comments to staff depends on an assignment step Admin performs**
+  (`InternshipAllocation` for the internship report, `DissertationAllocation` for the dissertation)
+  — the student can always upload regardless, but no Lecturer can see or comment on it until Admin
+  has assigned one. There's nothing for the frontend to do differently here; just don't be surprised
+  if `commentCount` stays `0` for a while after upload.
+- `GET .../{id}/comments` returns every comment left by Admin/the assigned Lecturer, oldest first:
+  ```json
+  [
+    {
+      "id": "guid",
+      "studentSubmissionId": "guid",
+      "authorUserId": "guid",
+      "authorUsername": "lect3",
+      "authorRole": "Lecturer",
+      "text": "Please expand section 3 with more detail on your methodology.",
+      "createdAt": "2026-09-02T17:12:00Z"
+    }
+  ]
+  ```
+  A Student can only read this list for their own `{id}` — there is no comment-posting endpoint
+  available to a Student (posting is Admin/Lecturer only, and emails the student automatically when
+  it happens, so a "you have a new comment" notification doesn't need to be built client-side, just
+  surface it in-app when the student next opens the app).
+- `{id}` in the `/download` and `/comments` routes is the `StudentSubmissionResponse.id` from either
+  the upload response or `GET .../mine` — fetch `mine` first to get it, there's no shortcut route
+  that resolves "my current submission's comments" directly by type.
+
 ## 5. Handling file downloads
 
-The three `/{id}/download` endpoints return the **raw file bytes** with the correct `Content-Type`
+The `/{id}/download` endpoints (Assignments, Notes, Past questions, plus the new internship
+report/dissertation submissions) return the **raw file bytes** with the correct `Content-Type`
 and `Content-Disposition` — not a JSON envelope. Don't `fetch().then(res => res.json())` these;
 either:
 - Open them in a new tab/`window.location` with the JWT passed however your auth layer supports
@@ -254,3 +330,5 @@ them away:
 | Assignments list/detail + download | `GET /api/assignments/paged`, `GET /api/assignments/{id}/download` |
 | Notes list/detail + download + upload | `GET /api/notes/paged`, `GET /api/notes/{id}/download`, `POST /api/notes` |
 | Past questions list/detail + download | `GET /api/pastquestions/paged`, `GET /api/pastquestions/{id}/download` |
+| Internship report status + upload + comments | `GET /api/internshipreports/mine`, `POST /api/internshipreports`, `GET /api/internshipreports/{id}/download`, `GET /api/internshipreports/{id}/comments` |
+| Dissertation write-up status + upload + comments | `GET /api/dissertationsubmissions/mine`, `POST /api/dissertationsubmissions`, `GET /api/dissertationsubmissions/{id}/download`, `GET /api/dissertationsubmissions/{id}/comments` |

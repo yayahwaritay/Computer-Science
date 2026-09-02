@@ -17,6 +17,12 @@ public class UnitOfWork : IUnitOfWork
     public IDissertationRepository Dissertations { get; }
     public IActivityLogRepository ActivityLogs { get; }
     public ICourseAllocationRepository CourseAllocations { get; }
+    public IOrganizationRepository Organizations { get; }
+    public IInternshipAllocationRepository InternshipAllocations { get; }
+    public IInternshipEvaluationRepository InternshipEvaluations { get; }
+    public IDissertationAllocationRepository DissertationAllocations { get; }
+    public IStudentSubmissionRepository StudentSubmissions { get; }
+    public ISubmissionCommentRepository SubmissionComments { get; }
 
     public UnitOfWork(AppDbContext context)
     {
@@ -30,6 +36,12 @@ public class UnitOfWork : IUnitOfWork
         Dissertations = new DissertationRepository(_context);
         ActivityLogs = new ActivityLogRepository(_context);
         CourseAllocations = new CourseAllocationRepository(_context);
+        Organizations = new OrganizationRepository(_context);
+        InternshipAllocations = new InternshipAllocationRepository(_context);
+        InternshipEvaluations = new InternshipEvaluationRepository(_context);
+        DissertationAllocations = new DissertationAllocationRepository(_context);
+        StudentSubmissions = new StudentSubmissionRepository(_context);
+        SubmissionComments = new SubmissionCommentRepository(_context);
     }
 
     public async Task<int> SaveChangesAsync()

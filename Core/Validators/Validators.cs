@@ -349,3 +349,184 @@ public static class DissertationValidator
         return errors;
     }
 }
+
+public static class OrganizationValidator
+{
+    public static List<string> ValidateRegister(OrganizationRegisterRequest request)
+    {
+        var errors = new List<string>();
+
+        if (string.IsNullOrWhiteSpace(request.Email))
+            errors.Add("Email is required.");
+        else if (!IsValidEmail(request.Email))
+            errors.Add("Invalid email format.");
+
+        if (string.IsNullOrWhiteSpace(request.Name))
+            errors.Add("Organization name is required.");
+        else if (request.Name.Length > 200)
+            errors.Add("Organization name must not exceed 200 characters.");
+
+        if (string.IsNullOrWhiteSpace(request.DefaultPassword))
+            errors.Add("Default password is required.");
+        else if (request.DefaultPassword.Length < 8)
+            errors.Add("Default password must be at least 8 characters.");
+        else if (!request.DefaultPassword.Any(char.IsUpper) || !request.DefaultPassword.Any(char.IsLower) || !request.DefaultPassword.Any(char.IsDigit))
+            errors.Add("Default password must contain at least one uppercase letter, one lowercase letter, and one digit.");
+
+        return errors;
+    }
+
+    private static bool IsValidEmail(string email)
+    {
+        try
+        {
+            var addr = new System.Net.Mail.MailAddress(email);
+            return addr.Address == email;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+}
+
+public static class InternshipAllocationValidator
+{
+    private static readonly Regex AcademicYearPattern = new(@"^\d{4}/\d{4}$", RegexOptions.Compiled);
+
+    public static List<string> Validate(InternshipAllocationRequest request)
+    {
+        var errors = new List<string>();
+
+        if (string.IsNullOrWhiteSpace(request.StudentId))
+            errors.Add("StudentId is required.");
+
+        if (request.OrganizationId == Guid.Empty)
+            errors.Add("OrganizationId is required.");
+
+        if (request.LecturerUserId == Guid.Empty)
+            errors.Add("LecturerUserId is required.");
+
+        if (string.IsNullOrWhiteSpace(request.AcademicYear))
+            errors.Add("Academic year is required.");
+        else if (!AcademicYearPattern.IsMatch(request.AcademicYear))
+            errors.Add("Academic year must be in the format \"2021/2022\".");
+
+        if (!Enum.IsDefined(typeof(Semester), request.Semester))
+            errors.Add("Semester must be First or Second.");
+
+        return errors;
+    }
+}
+
+public static class DissertationAllocationValidator
+{
+    private static readonly Regex AcademicYearPattern = new(@"^\d{4}/\d{4}$", RegexOptions.Compiled);
+
+    public static List<string> Validate(DissertationAllocationRequest request)
+    {
+        var errors = new List<string>();
+
+        if (string.IsNullOrWhiteSpace(request.StudentId))
+            errors.Add("StudentId is required.");
+
+        if (request.LecturerUserId == Guid.Empty)
+            errors.Add("LecturerUserId is required.");
+
+        if (string.IsNullOrWhiteSpace(request.AcademicYear))
+            errors.Add("Academic year is required.");
+        else if (!AcademicYearPattern.IsMatch(request.AcademicYear))
+            errors.Add("Academic year must be in the format \"2021/2022\".");
+
+        return errors;
+    }
+}
+
+public static class SubmissionCommentValidator
+{
+    public static List<string> Validate(SubmissionCommentRequest request)
+    {
+        var errors = new List<string>();
+
+        if (string.IsNullOrWhiteSpace(request.Text))
+            errors.Add("Comment text is required.");
+        else if (request.Text.Length > 2000)
+            errors.Add("Comment text must not exceed 2000 characters.");
+
+        return errors;
+    }
+}
+
+public static class InternshipEvaluationValidator
+{
+    private static readonly Regex AcademicYearPattern = new(@"^\d{4}/\d{4}$", RegexOptions.Compiled);
+
+    public static List<string> Validate(InternshipEvaluationRequest request)
+    {
+        var errors = new List<string>();
+
+        if (string.IsNullOrWhiteSpace(request.StudentId))
+            errors.Add("StudentId is required.");
+
+        if (string.IsNullOrWhiteSpace(request.CompanySupervisorName))
+            errors.Add("Company supervisor name is required.");
+
+        if (string.IsNullOrWhiteSpace(request.CompanySupervisorPhone))
+            errors.Add("Company supervisor phone is required.");
+
+        if (string.IsNullOrWhiteSpace(request.AcademicYear))
+            errors.Add("Academic year is required.");
+        else if (!AcademicYearPattern.IsMatch(request.AcademicYear))
+            errors.Add("Academic year must be in the format \"2021/2022\".");
+
+        if (!Enum.IsDefined(typeof(Semester), request.Semester))
+            errors.Add("Semester must be First or Second.");
+
+        if (request.InternshipStartDate == default)
+            errors.Add("Internship start date is required.");
+
+        if (request.InternshipMonths <= 0 || request.InternshipMonths > 24)
+            errors.Add("Internship months must be between 1 and 24.");
+
+        ValidateRating(request.RapportWithSupervisor, "Establishes rapport with supervisor", errors);
+        ValidateRating(request.RapportWithStaffAndClient, "Establishes rapport with staff and client", errors);
+        ValidateRating(request.CommunicatesWell, "Communicates well", errors);
+        ValidateRating(request.SeeksNewKnowledge, "Seeks new knowledge", errors);
+        ValidateRating(request.ShowsInitiative, "Shows initiative", errors);
+        ValidateRating(request.ManagesTimeWell, "Manages time well", errors);
+        ValidateRating(request.ProducesAccurateReports, "Produces accurate reports/records", errors);
+        ValidateRating(request.DemonstratesAdequateKnowledge, "Demonstrates adequate knowledge", errors);
+        ValidateRating(request.DressesProfessionally, "Dresses professionally", errors);
+        ValidateRating(request.IsPunctual, "Is punctual", errors);
+        ValidateRating(request.IsDependable, "Is dependable", errors);
+        ValidateRating(request.AcceptsConstructiveCriticism, "Accepts constructive criticism", errors);
+        ValidateRating(request.DemonstratesEnthusiasm, "Demonstrates enthusiasm", errors);
+
+        if (request.OtherRatingScore.HasValue && (request.OtherRatingScore < 1 || request.OtherRatingScore > 4))
+            errors.Add("Other ratings score must be between 1 and 4.");
+
+        if (string.IsNullOrWhiteSpace(request.SupervisorSignatureName))
+            errors.Add("Supervisor signature name is required.");
+
+        if (request.CertificationDate == default)
+            errors.Add("Certification date is required.");
+
+        return errors;
+    }
+
+    public static List<string> ValidateReportGrade(ReportGradeRequest request)
+    {
+        var errors = new List<string>();
+
+        if (request.ReportScore < 0 || request.ReportScore > 30)
+            errors.Add("Report score must be between 0 and 30.");
+
+        return errors;
+    }
+
+    private static void ValidateRating(int value, string label, List<string> errors)
+    {
+        if (value < 1 || value > 4)
+            errors.Add($"\"{label}\" must be rated between 1 (Poor) and 4 (Excellent).");
+    }
+}

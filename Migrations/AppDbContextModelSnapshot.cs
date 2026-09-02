@@ -288,6 +288,243 @@ namespace CompSci.Migrations
                     b.ToTable("Dissertations");
                 });
 
+            modelBuilder.Entity("CompSci.Core.Entities.DissertationAllocation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AcademicYear")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("LecturerUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LecturerUserId");
+
+                    b.HasIndex("StudentId", "AcademicYear")
+                        .IsUnique();
+
+                    b.ToTable("DissertationAllocations");
+                });
+
+            modelBuilder.Entity("CompSci.Core.Entities.InternshipAllocation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AcademicYear")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("LecturerUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("OrganizationUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Semester")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LecturerUserId");
+
+                    b.HasIndex("OrganizationUserId");
+
+                    b.HasIndex("StudentId", "AcademicYear", "Semester")
+                        .IsUnique();
+
+                    b.ToTable("InternshipAllocations");
+                });
+
+            modelBuilder.Entity("CompSci.Core.Entities.InternshipEvaluation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AcademicYear")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<int>("AcceptsConstructiveCriticism")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid?>("AllocatedLecturerUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CertificationDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Comments")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<int>("CommunicatesWell")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("CompanySupervisorName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("CompanySupervisorPhone")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("DemonstratesAdequateKnowledge")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("DemonstratesEnthusiasm")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("DressesProfessionally")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("EvaluationScore")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("numeric(5,2)");
+
+                    b.Property<string>("Grade")
+                        .HasMaxLength(1)
+                        .HasColumnType("character varying(1)");
+
+                    b.Property<int>("InternshipMonths")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("InternshipStartDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("IsDependable")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("IsPunctual")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ManagesTimeWell")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("OrganizationUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("OtherRatingLabel")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<int?>("OtherRatingScore")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ProducesAccurateReports")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ProgramName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<int>("RapportWithStaffAndClient")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("RapportWithSupervisor")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("RawRatingTotal")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("ReportGradedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("ReportGradedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal?>("ReportScore")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("numeric(5,2)");
+
+                    b.Property<int>("SeeksNewKnowledge")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Semester")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ShowsInitiative")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("StudentFullName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("StudentIdNumber")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("SupervisorSignatureName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<decimal?>("TotalScore")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("numeric(5,2)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AllocatedLecturerUserId");
+
+                    b.HasIndex("OrganizationUserId");
+
+                    b.HasIndex("StudentId");
+
+                    b.ToTable("InternshipEvaluations");
+                });
+
             modelBuilder.Entity("CompSci.Core.Entities.Note", b =>
                 {
                     b.Property<Guid>("Id")
@@ -320,6 +557,34 @@ namespace CompSci.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Notes");
+                });
+
+            modelBuilder.Entity("CompSci.Core.Entities.Organization", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("Organizations");
                 });
 
             modelBuilder.Entity("CompSci.Core.Entities.PastQuestion", b =>
@@ -411,6 +676,72 @@ namespace CompSci.Migrations
                     b.ToTable("Students");
                 });
 
+            modelBuilder.Entity("CompSci.Core.Entities.StudentSubmission", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("FilePath")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("OriginalFileName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("SubmissionCount")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("SubmittedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StudentId", "Type")
+                        .IsUnique();
+
+                    b.ToTable("StudentSubmissions");
+                });
+
+            modelBuilder.Entity("CompSci.Core.Entities.SubmissionComment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AuthorUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("StudentSubmissionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StudentSubmissionId");
+
+                    b.ToTable("SubmissionComments");
+                });
+
             modelBuilder.Entity("CompSci.Core.Entities.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -421,6 +752,9 @@ namespace CompSci.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("CredentialsExpireAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Email")
@@ -465,6 +799,50 @@ namespace CompSci.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("CompSci.Core.Entities.DissertationAllocation", b =>
+                {
+                    b.HasOne("CompSci.Core.Entities.Student", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Student");
+                });
+
+            modelBuilder.Entity("CompSci.Core.Entities.InternshipAllocation", b =>
+                {
+                    b.HasOne("CompSci.Core.Entities.Student", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Student");
+                });
+
+            modelBuilder.Entity("CompSci.Core.Entities.InternshipEvaluation", b =>
+                {
+                    b.HasOne("CompSci.Core.Entities.Student", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Student");
+                });
+
+            modelBuilder.Entity("CompSci.Core.Entities.Organization", b =>
+                {
+                    b.HasOne("CompSci.Core.Entities.User", "User")
+                        .WithOne()
+                        .HasForeignKey("CompSci.Core.Entities.Organization", "UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("CompSci.Core.Entities.Student", b =>
                 {
                     b.HasOne("CompSci.Core.Entities.User", "User")
@@ -474,6 +852,28 @@ namespace CompSci.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("CompSci.Core.Entities.StudentSubmission", b =>
+                {
+                    b.HasOne("CompSci.Core.Entities.Student", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Student");
+                });
+
+            modelBuilder.Entity("CompSci.Core.Entities.SubmissionComment", b =>
+                {
+                    b.HasOne("CompSci.Core.Entities.StudentSubmission", "StudentSubmission")
+                        .WithMany()
+                        .HasForeignKey("StudentSubmissionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("StudentSubmission");
                 });
 #pragma warning restore 612, 618
         }

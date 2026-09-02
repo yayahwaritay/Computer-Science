@@ -69,6 +69,9 @@ public class AuthService : IAuthService
         if (user.Role == UserRole.Student && !user.IsApproved)
             throw new UnauthorizedAccessException("Your registration is pending approval by an administrator or lecturer.");
 
+        if (user.Role == UserRole.Organization && user.CredentialsExpireAt.HasValue && user.CredentialsExpireAt.Value < DateTime.UtcNow)
+            throw new UnauthorizedAccessException("Your credentials have expired. Contact an administrator or lecturer to reissue them.");
+
         var token = _jwtTokenGenerator.GenerateToken(user.Id, user.Email, user.Username, user.Role.ToString());
 
         return new AuthResponse
@@ -238,6 +241,11 @@ public class AuthService : IAuthService
 
         user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
         user.UpdatedAt = DateTime.UtcNow;
+
+        // The 2-week expiry only guards the untouched default password issued to Organization
+        // accounts; once they set their own password that clock no longer applies.
+        if (user.Role == UserRole.Organization)
+            user.CredentialsExpireAt = null;
 
         await _unitOfWork.Users.UpdateAsync(user);
         await _unitOfWork.SaveChangesAsync();

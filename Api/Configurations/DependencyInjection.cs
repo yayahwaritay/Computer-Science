@@ -31,11 +31,19 @@ public static class DependencyInjection
         services.AddScoped<IDissertationPdfBuilder, DissertationPdfBuilder>();
         services.AddScoped<ICourseAllocationService, CourseAllocationService>();
         services.AddScoped<ICourseAllocationPdfBuilder, CourseAllocationPdfBuilder>();
+        services.AddScoped<IOrganizationService, OrganizationService>();
+        services.AddScoped<IInternshipAllocationService, InternshipAllocationService>();
+        services.AddScoped<IInternshipEvaluationService, InternshipEvaluationService>();
+        services.AddScoped<IInternshipCompiledPdfBuilder, InternshipCompiledPdfBuilder>();
+        services.AddScoped<IDissertationAllocationService, DissertationAllocationService>();
+        services.AddScoped<IStudentSubmissionService, StudentSubmissionService>();
 
         services.AddScoped<IFileStorageService, LocalFileStorageService>();
 
         services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
-        services.AddHttpClient<IEmailSender, BrevoEmailSender>();
+        services.AddHttpClient<SendGridEmailSender>();
+        services.AddHttpClient<MailgunEmailSender>();
+        services.AddScoped<IEmailSender, FallbackEmailSender>();
 
         return services;
     }

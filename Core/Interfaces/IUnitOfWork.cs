@@ -11,5 +11,11 @@ public interface IUnitOfWork : IDisposable
     IDissertationRepository Dissertations { get; }
     IActivityLogRepository ActivityLogs { get; }
     ICourseAllocationRepository CourseAllocations { get; }
+    IOrganizationRepository Organizations { get; }
+    IInternshipAllocationRepository InternshipAllocations { get; }
+    IInternshipEvaluationRepository InternshipEvaluations { get; }
+    IDissertationAllocationRepository DissertationAllocations { get; }
+    IStudentSubmissionRepository StudentSubmissions { get; }
+    ISubmissionCommentRepository SubmissionComments { get; }
     Task<int> SaveChangesAsync();
 }

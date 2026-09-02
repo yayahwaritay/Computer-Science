@@ -7,9 +7,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CompSci.Api.Controllers;
 
+/// <summary>Course-management content, readable by Admin/Lecturer/Student. Organization accounts have no access - see InternshipEvaluationsController for what they can reach.</summary>
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
+[Authorize(Roles = "Admin,Lecturer,Student")]
 public class NotesController : ControllerBase
 {
     private readonly INoteService _noteService;

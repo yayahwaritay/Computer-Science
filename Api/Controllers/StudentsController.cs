@@ -7,9 +7,13 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CompSci.Api.Controllers;
 
+/// <summary>
+/// Student profiles, readable by Admin/Lecturer/Student. Organization accounts have no access -
+/// they only ever see the students placed with them, via GET /api/internshipallocations/mine.
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
+[Authorize(Roles = "Admin,Lecturer,Student")]
 public class StudentsController : ControllerBase
 {
     private readonly IStudentService _studentService;

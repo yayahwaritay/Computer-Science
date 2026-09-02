@@ -11,13 +11,14 @@ namespace CompSci.Api.Controllers;
 
 /// <summary>
 /// Course allocation — which staff member teaches which course, for a given program/year of study,
-/// academic year and semester. Managed exclusively by Admin; any authenticated user (Admin,
-/// Lecturer, Student) can read/download. A "document" is every row sharing one AcademicYear +
-/// Semester (e.g. "2021/2022" + Second = the "2021_2022 Second Semester Allocation").
+/// academic year and semester. Managed exclusively by Admin; Admin/Lecturer/Student can read/
+/// download. Organization accounts have no access - see InternshipEvaluationsController for what
+/// they can reach. A "document" is every row sharing one AcademicYear + Semester (e.g. "2021/2022"
+/// + Second = the "2021_2022 Second Semester Allocation").
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
+[Authorize(Roles = "Admin,Lecturer,Student")]
 public class CourseAllocationsController : ControllerBase
 {
     private readonly ICourseAllocationService _courseAllocationService;

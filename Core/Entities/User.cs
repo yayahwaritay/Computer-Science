@@ -18,6 +18,14 @@ public class User
 
     public bool IsApproved { get; set; } = true;
     public DateTime? ApprovedAt { get; set; }
+
+    /// <summary>
+    /// Only set for Organization accounts: the default password issued at registration (or the
+    /// most recent reissue) stops working after this instant. Cleared once the organization sets
+    /// its own password via change-password. Null for every other role.
+    /// </summary>
+    public DateTime? CredentialsExpireAt { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }
 }
